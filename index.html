@@ -3,10 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mening birinchi saytim</title>
+  <title>Mening Saytim</title>
+
+  <style>
+    /* === ASOSIY DIZAYN === */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #141E30, #243B55);
+      color: white;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    header {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 20px;
+      opacity: 0.85;
+      margin-bottom: 40px;
+    }
+
+    /* === TUGMA DIZAYNI === */
+    button {
+      background: #00C9A7;
+      border: none;
+      color: white;
+      padding: 14px 32px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #02b39b;
+      transform: scale(1.05);
+    }
+
+    /* === PASTKI QISM (FOOTER) === */
+    footer {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      font-size: 14px;
+      opacity: 0.6;
+    }
+
+    /* === ANIMATSIYA === */
+    .fade {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease-in-out;
+    }
+
+    .show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Salom, bu mening birinchi sayt!</h1>
-  <p>Men VS Code orqali HTML kod yozishni o‘rganayapman 😎</p>
+  <header class="fade">🚀 Xush kelibsiz mening saytimga!</header>
+  <p class="fade">Bu sayt GitHub Pages orqali joylangan va HTML, CSS hamda JavaScript yordamida yaratilgan.</p>
+  <button id="actionButton" class="fade">Menga bos!</button>
+
+  <footer>© 2025 Iskandar | GitHub orqali yaratilgan</footer>
+
+  <script>
+    // === SAHIFA YUKLANGANDA ANIMATSIYA YOQISH ===
+    window.onload = () => {
+      document.querySelectorAll('.fade').forEach(el => {
+        setTimeout(() => el.classList.add('show'), 300);
+      });
+    };
+
+    // === TUGMA BOSILGANDA EFFEKTI ===
+    const button = document.getElementById('actionButton');
+    button.addEventListener('click', () => {
+      button.innerText = "👏 Rahmat!";
+      alert("Siz tugmani bosdingiz!");
+    });
+  </script>
 </body>
 </html>
