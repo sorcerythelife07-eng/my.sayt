@@ -4,8 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ESP8266 boshqaruv paneli</title>
-
+  <title>Smart Lamp — Boshqaruv</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
@@ -14,112 +13,192 @@
     body {
       margin: 0;
       padding: 20px;
-      background: #101827;
-      color: white;
+      min-height: 100vh;
       font-family: Arial, sans-serif;
+      color: #f8fafc;
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .panel {
-      max-width: 460px;
-      margin: 35px auto;
-      padding: 24px;
-      background: #1e293b;
-      border-radius: 18px;
+      width: 100%;
+      max-width: 420px;
+      padding: 28px;
+      border-radius: 24px;
+      text-align: center;
+      background: rgba(30, 41, 59, 0.95);
+      box-shadow: 0 20px 60px #0005;
     }
 
-    h1 { font-size: 25px; }
+    h1 { margin: 0 0 8px; font-size: 27px; }
+    .subtitle { color: #94a3b8; margin-bottom: 22px; }
 
-    .status {
-      padding: 13px;
-      border-radius: 10px;
+    .connection {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 30px;
       background: #334155;
-      margin: 18px 0;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    .connected .dot {
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    .lamp-area {
+      margin: 26px 0;
+      padding: 25px 10px;
+      border-radius: 20px;
+      background: #0f172a;
+    }
+
+    .bulb {
+      font-size: 100px;
+      line-height: 1.3;
+      filter: grayscale(1);
+      opacity: 0.35;
+      transition: all 0.35s ease;
+    }
+
+    .bulb.on {
+      filter: grayscale(0);
+      opacity: 1;
+      text-shadow: 0 0 20px #facc15, 0 0 55px #f59e0b;
+    }
+
+    .lamp-state {
+      font-size: 25px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .state-description {
+      color: #94a3b8;
+      margin-top: 8px;
+      font-size: 14px;
     }
 
     button {
       width: 100%;
       padding: 15px;
-      margin: 7px 0;
+      margin-top: 12px;
       border: 0;
-      border-radius: 10px;
+      border-radius: 13px;
+      color: white;
       font-size: 17px;
+      font-weight: bold;
       cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
     }
 
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .on-btn { background: #16a34a; }
+    .off-btn { background: #dc2626; }
 
-    .on { background: #16a34a; color: white; }
-    .off { background: #dc2626; color: white; }
-
-    #log {
-      min-height: 100px;
-      max-height: 240px;
-      overflow-y: auto;
-      padding: 12px;
-      border-radius: 10px;
+    .log {
+      margin-top: 24px;
+      text-align: left;
+      padding: 14px;
+      border-radius: 12px;
       background: #0f172a;
-      white-space: pre-wrap;
+      color: #cbd5e1;
+      font-size: 13px;
       overflow-wrap: anywhere;
-      font-size: 14px;
     }
 
-    .small { color: #cbd5e1; font-size: 13px; }
+    .log-title { font-weight: bold; margin-bottom: 8px; }
+    #messages { max-height: 110px; overflow-y: auto; white-space: pre-wrap; }
   </style>
 </head>
 
 <body>
-  <div class="panel">
-    <h1>ESP8266 boshqaruv paneli</h1>
-    <p class="small">Internet orqali masofadan boshqarish</p>
+  <main class="panel">
+    <h1>Smart Lamp</h1>
+    <div class="subtitle">Masofadan boshqarish paneli</div>
 
-    <div class="status" id="status">
-      Brokerga ulanmoqda...
+    <div class="connection" id="connection">
+      <span class="dot"></span>
+      <span id="connectionText">Ulanmoqda...</span>
     </div>
 
-    <button class="on" id="onBtn" disabled>
-      YOQISH — ON
+    <section class="lamp-area">
+      <div class="bulb" id="bulb">💡</div>
+      <div class="lamp-state" id="lampState">HOLAT NOMA'LUM</div>
+      <div class="state-description" id="description">
+        Qurilma holati kutilmoqda
+      </div>
+    </section>
+
+    <button class="on-btn" id="onBtn" disabled>
+      ☀️ LAMPANI YOQISH
     </button>
 
-    <button class="off" id="offBtn" disabled>
-      O‘CHIRISH — OFF
+    <button class="off-btn" id="offBtn" disabled>
+      🌙 LAMPANI O‘CHIRISH
     </button>
 
-    <h3>Qurilmadan kelgan javoblar</h3>
-    <div id="log">Ulanish kutilmoqda...</div>
-  </div>
+    <section class="log">
+      <div class="log-title">Aloqa xabarlari</div>
+      <div id="messages">Sayt ishga tushdi.</div>
+    </section>
+  </main>
 
   <script>
-    // EMQX Cloud ma'lumotlari
     const HOST =
       "wss://m18ff663.ala.eu-central-1.emqxsl.com:8084/mqtt";
 
-    const USERNAME = "espUser";
-    const PASSWORD = "sorcery007";
+    // EMQX Cloud foydalanuvchi ma'lumotlarini kiriting
+    const USERNAME = "WEB_MQTT_USERNAME";
+    const PASSWORD = "WEB_MQTT_PASSWORD";
 
     const COMMAND_TOPIC = "myproject_83921/command";
     const REPLY_TOPIC = "myproject_83921/reply";
 
-    const statusBox = document.getElementById("status");
-    const logBox = document.getElementById("log");
+    const connection = document.getElementById("connection");
+    const connectionText = document.getElementById("connectionText");
+    const bulb = document.getElementById("bulb");
+    const lampState = document.getElementById("lampState");
+    const description = document.getElementById("description");
     const onBtn = document.getElementById("onBtn");
     const offBtn = document.getElementById("offBtn");
+    const messages = document.getElementById("messages");
 
     function log(text) {
       const time = new Date().toLocaleTimeString();
-      logBox.textContent += "\n[" + time + "] " + text;
-      logBox.scrollTop = logBox.scrollHeight;
+      messages.textContent += "\n[" + time + "] " + text;
+      messages.scrollTop = messages.scrollHeight;
     }
 
-    function setConnected(connected) {
-      statusBox.textContent = connected
-        ? "Ulandi — qurilma bilan aloqa mavjud"
-        : "Ulanmoqda yoki aloqa uzilgan...";
-
+    function setConnection(connected) {
+      connection.classList.toggle("connected", connected);
+      connectionText.textContent =
+        connected ? "Brokerga ulangan" : "Aloqa uzilgan";
       onBtn.disabled = !connected;
       offBtn.disabled = !connected;
+    }
+
+    function setLampState(state) {
+      const isOn = state === "ON";
+
+      bulb.classList.toggle("on", isOn);
+      lampState.textContent = isOn ? "ON — YOQILGAN" : "OFF — O‘CHIRILGAN";
+      lampState.style.color = isOn ? "#facc15" : "#94a3b8";
+      description.textContent = isOn
+        ? "Lampa yoqilgan holatda"
+        : "Lampa passiv holatda";
     }
 
     const client = mqtt.connect(HOST, {
@@ -133,25 +212,29 @@
     });
 
     client.on("connect", function () {
-      setConnected(true);
-      log("EMQX brokeriga ulandi.");
+      setConnection(true);
+      log("MQTT brokeriga ulandi.");
 
       client.subscribe(REPLY_TOPIC, function (err) {
         if (err) {
           log("Javob mavzusiga obuna bo‘lishda xato.");
         } else {
-          log("Qurilma javoblari tinglanmoqda.");
+          log("Qurilma holati kutilmoqda.");
         }
       });
     });
 
-    client.on("reconnect", function () {
-      setConnected(false);
-      log("Qayta ulanishga urinish...");
+    client.on("offline", function () {
+      setConnection(false);
+      log("Aloqa uzildi.");
     });
 
-    client.on("offline", function () {
-      setConnected(false);
+    client.on("close", function () {
+      setConnection(false);
+    });
+
+    client.on("reconnect", function () {
+      connectionText.textContent = "Qayta ulanmoqda...";
     });
 
     client.on("error", function (err) {
@@ -159,18 +242,25 @@
     });
 
     client.on("message", function (topic, payload) {
-      log(topic + " → " + payload.toString());
+      const message = payload.toString().trim();
+      log("ESP8266: " + message);
+
+      if (message === "STATE:ON") {
+        setLampState("ON");
+      } else if (message === "STATE:OFF") {
+        setLampState("OFF");
+      }
     });
 
     function sendCommand(command) {
       if (!client.connected) {
-        log("Brokerga ulanish yo‘q.");
+        log("Brokerga ulanish mavjud emas.");
         return;
       }
 
       client.publish(COMMAND_TOPIC, command, function (err) {
         if (err) {
-          log("Buyruq yuborilmadi: " + err.message);
+          log("Buyruq yuborilmadi.");
         } else {
           log("Buyruq yuborildi: " + command);
         }
