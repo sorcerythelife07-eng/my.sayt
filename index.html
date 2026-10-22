@@ -258,13 +258,18 @@
         return;
       }
 
-      client.publish(COMMAND_TOPIC, command, function (err) {
-        if (err) {
-          log("Buyruq yuborilmadi.");
-        } else {
-          log("Buyruq yuborildi: " + command);
-        }
-      });
+      client.publish(
+  COMMAND_TOPIC,
+  command,
+  { retain: true },
+  function (err) {
+    if (err) {
+      log("Buyruq yuborilmadi!");
+    } else {
+      log("Buyruq saqlandi va yuborildi: " + command);
+    }
+  }
+);
     }
 
     onBtn.addEventListener("click", function () {
